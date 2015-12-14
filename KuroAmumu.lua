@@ -7,7 +7,7 @@
   /_/ |_\__,_/_/   \____/   /____/\___/_/  /_/ .___/\__/   /____/\___/_/  /_/\___/____/  
                                             /_/                                          
 
-  Kuro Amumu Alpha Test
+  Kuro Amumu Beta Test
             by. KuroXNeko
 ]]--
 
@@ -19,9 +19,8 @@ if myHero.charName ~= "Amumu" then return end
 local ScriptVersion = 0.1
 local target = nil
 local DespairStatus = false
-local NearEnemyW = false
-local jungleMinions = minionManager(MINION_JUNGLE, 315, myHero)
-local enemyMinions = minionManager(MINION_ENEMY, 315, myHero)
+local jungleMinions = minionManager(MINION_JUNGLE, 350, myHero)
+local enemyMinions = minionManager(MINION_ENEMY, 350, myHero)
 
 
 -- [Shared Function] --
@@ -103,16 +102,16 @@ function KuroAmumu:Config()
   -- Set Spell with SimpleLib
   self.Spell_Q = _Spell({Slot = _Q, DamageName = "Q", Range = 1100, Width = 80, Delay = 0.25, Speed = 2000, Collision = true, Aoe = false, Type = SPELL_TYPE.LINEAR})
   self.Spell_Q:SetAccuracy(70)
-  self.Spell_Q:AddDraw({Enable = true, color = {255,0,125,255}})
+  self.Spell_Q:AddDraw({Enable = true, Color = {255,0,125,255}})
   
   self.Spell_W = _Spell({Slot = _W, DamageName = "W", Range = 300, Delay = 0, Aoe = true, Type = SPELL_TYPE.SELF})
-  self.Spell_W:AddDraw({Enable = false, color = {255,255,140,0}})
+  self.Spell_W:AddDraw({Enable = false, Color = {255,255,140,0}})
   
   self.Spell_E = _Spell({Slot = _E, DamageName = "E", Range = 350, Delay = 0.125, Aoe = true, Type = SPELL_TYPE.SELF})
-  self.Spell_E:AddDraw({Enable = true, color = {255,170,0,255}})
+  self.Spell_E:AddDraw({Enable = true, Color = {255,170,0,255}})
   
   self.Spell_R = _Spell({Slot = _R, DamageName = "R", Range = 550, Delay = 0.25, Aoe = true, Type = SPELL_TYPE.SELF})
-  self.Spell_R:AddDraw({Enable = true, color = {255,255,0,0}})
+  self.Spell_R:AddDraw({Enable = true, Color = {255,255,0,0}})
   
   -- Make Menu.
   self.cfg = scriptConfig("Kuro Amumu", "kuro_amumu")
@@ -135,24 +134,24 @@ function KuroAmumu:Config()
   
   -- Harass
   self.cfg:addSubMenu("Harass Setting", "harass")
-      self.cfg.harass:addParam("autow", "Use Auto W", SCRIPT_PARAM_ONOFF, true)
-      self.cfg.harass:addParam("autowmana", "Auto W Mana", SCRIPT_PARAM_SLICE, 20,0,100)
+      self.cfg.harass:addParam("autoq", "Use Q", SCRIPT_PARAM_ONOFF, false)
       self.cfg.harass:addParam("info1", "", SCRIPT_PARAM_INFO, "")
+      self.cfg.harass:addParam("autow", "Use Auto W", SCRIPT_PARAM_ONOFF, false)
+      self.cfg.harass:addParam("autowmana", "Auto W Mana", SCRIPT_PARAM_SLICE, 20,0,100)
+      self.cfg.harass:addParam("info2", "", SCRIPT_PARAM_INFO, "")
       self.cfg.harass:addParam("autoe", "Use Auto E", SCRIPT_PARAM_ONOFF, true)
-      self.cfg.harass:addParam("autoemana", "Auto E Mana", SCRIPT_PARAM_SLICE, 50,0,100)
+      self.cfg.harass:addParam("autoemana", "Auto E Mana", SCRIPT_PARAM_SLICE, 30,0,100)
       
   -- Lane Clear
   self.cfg:addSubMenu("Clear Setting", "clear")
-  
+      
   -- Jungle Clear
   
   -- Spell Menu with SimpleLib.
-  self.cfg:addSubMenu("Spell Setting", "spell")
+  --self.cfg:addSubMenu("Spell Setting", "spell")
   
   -- Draw Menu
   self.cfg:addSubMenu("Draw Setting", "draw")
-      self.cfg.draw:addParam("info1", "", SCRIPT_PARAM_INFO, "")
-      self.cfg.draw:addParam("drawtarget", "Draw Target", SCRIPT_PARAM_ONOFF, true)
       
   -- Key Menu with SimpleLib
   self.cfg:addSubMenu("Key Setting", "key")
@@ -160,8 +159,15 @@ function KuroAmumu:Config()
   
   -- Etc
   self.cfg:addSubMenu("Msic Setting", "msic")
-    self.cfg.msic:addParam("autodisablew", "Auto disable W", SCRIPT_PARAM_ONOFF, true)
-    self.cfg.msic:addParam("debug", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
+      self.cfg.msic:addParam("autodisablew", "Auto disable W", SCRIPT_PARAM_ONOFF, true)
+      self.cfg:addParam("info1", "Auto disable W can have bug", SCRIPT_PARAM_INFO, "")
+      self.cfg:addParam("info2", "when you reload or reconnect during game.", SCRIPT_PARAM_INFO, "")
+      self.cfg:addParam("info3", "", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("debug", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
+    
+  -- Info
+  self.cfg:addParam("info1", "", SCRIPT_PARAM_INFO, "")
+  self.cfg:addParam("info2", "Script by KuroXNeko", SCRIPT_PARAM_INFO, "")
   
   -- Set CallBack.
   AddDrawCallback(function() self:Draw() end)
@@ -248,11 +254,15 @@ function KuroAmumu:Combo()
   
   -- Auto W
   if self.cfg.combo.autow then
-    self:CastW("Combo", self.cfg.combo.autowmana)
+    if self:GetEnemyW() ~= 0 and (myHero.mana / myHero.maxMana > self.cfg.combo.autowmana / 100) then
+      self:EnableW()
+    else
+      self:DisableW()
+    end
   end
   
   -- Auto E
-  if self.cfg.combo.autoe and (myHero.mana / myHero.maxMana > self.cfg.combo.autoemana / 100) then
+  if self.cfg.combo.autoe and self.Spell_E:ValidTarget(target) and (myHero.mana / myHero.maxMana > self.cfg.combo.autoemana / 100) then
     self.Spell_E:Cast(target)
   end
   
@@ -269,63 +279,31 @@ end
 function KuroAmumu:Harass()
   
   -- Cast Q for target
-  self.Spell_Q:Cast(target)
+  if self.cfg.harass.autoq then
+    self.Spell_Q:Cast(target)
+  end
   
   -- Auto W
   if self.cfg.harass.autow then
-    self:CastW("Harass", self.cfg.harass.autowmana)
+    if self:GetEnemyW() ~= 0 and (myHero.mana / myHero.maxMana > self.cfg.harass.autowmana / 100) then
+      self:EnableW()
+    else
+      self:DisableW()
+    end
   end
   
   -- Auto E
-  if self.cfg.harass.autoe and (myHero.mana / myHero.maxMana > self.cfg.harass.autoemana / 100) then
+  if self.cfg.harass.autoe and self.Spell_E:ValidTarget(target) and (myHero.mana / myHero.maxMana > self.cfg.harass.autoemana / 100) then
     self.Spell_E:Cast(target)
   end
 end
 
 function KuroAmumu:Clear()
-
+  
 end
 
 function KuroAmumu:LastHit()
 
-end
-
-function KuroAmumu:CastW(mode, minmana)
-  if not mode then mode = "Combo" end
-  if not minmana then minmana = 0 end
-  
-  if (myHero.mana / myHero.maxMana > minmana / 100) then
-    self:DisableW()
-    return
-  end
-  
-  if mode == "Combo" then
-    
-    -- Find every enemy in range
-    if self:GetEnemyW() ~= 0 then
-      self:EnableW()
-    else
-      self:DisableW()
-    end
-  
-  elseif mode == "Harass" then
-    
-    -- Check Target is InRange.
-    if self.Spell_W:ValidTarget(target) then
-      self:EnableW()
-    else
-      self:DisableW()
-    end
-
-  elseif mode == "Clear" then
-    
-    -- Check Object is InRange.
-    if NearEnemy then
-      self:EnableW()
-    else
-      self:DisableW()
-    end
-  end
 end
 
 function KuroAmumu:AutoDisableW()
@@ -352,7 +330,7 @@ function KuroAmumu:GetAllEnemyW()
   jungleMinions:update()
   enemyMinions:update()
   
-  if jungleMinions.iCount > 0 or enemyMinions.iCount > 0 or CountEnemyHeroInRange(315) > 0 then
+  if jungleMinions.iCount > 0 or enemyMinions.iCount > 0 or CountEnemyHeroInRange(350) > 0 then
     return true
   else
     return false
@@ -362,7 +340,7 @@ end
 function KuroAmumu:GetEnemyW()
   
   -- Return enemy in range.
-  return CountEnemyHeroInRange(315)
+  return CountEnemyHeroInRange(350)
 end
 
 function KuroAmumu:GetEnemyR()

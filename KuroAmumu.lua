@@ -16,7 +16,8 @@ if not myHero then
 end
 if myHero.charName ~= "Amumu" then return end
 
-local ScriptVersion = 0.1
+local ScriptVersion = 0.2
+local ScriptUpdate = "15.12.2015"
 local target = nil
 local DespairStatus = false
 local jungleMinions = minionManager(MINION_JUNGLE, 350, myHero)
@@ -144,7 +145,7 @@ function KuroAmumu:Config()
       
   -- Lane Clear
   self.cfg:addSubMenu("Clear Setting", "clear")
-      
+      self.cfg.clear:addParam("info1", "Not yet.", SCRIPT_PARAM_INFO, "")
   -- Jungle Clear
   
   -- Spell Menu with SimpleLib.
@@ -152,6 +153,7 @@ function KuroAmumu:Config()
   
   -- Draw Menu
   self.cfg:addSubMenu("Draw Setting", "draw")
+      self.cfg.draw:addParam("info1", "What do you want to draw?", SCRIPT_PARAM_INFO, "")
       
   -- Key Menu with SimpleLib
   self.cfg:addSubMenu("Key Setting", "key")
@@ -160,20 +162,30 @@ function KuroAmumu:Config()
   -- Etc
   self.cfg:addSubMenu("Msic Setting", "msic")
       self.cfg.msic:addParam("autodisablew", "Auto disable W", SCRIPT_PARAM_ONOFF, true)
-      self.cfg:addParam("info1", "Auto disable W can have bug", SCRIPT_PARAM_INFO, "")
-      self.cfg:addParam("info2", "when you reload or reconnect during game.", SCRIPT_PARAM_INFO, "")
-      self.cfg:addParam("info3", "", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("info1", "Auto disable W can have bug", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("info2", "when you reload or reconnect during game.", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("info3", "", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("blockr", "Block R", SCRIPT_PARAM_ONOFF, false)
+      self.cfg.msic:addParam("info4", "Block R when outrange.", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("info5", "", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("debug", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
     
   -- Info
   self.cfg:addParam("info1", "", SCRIPT_PARAM_INFO, "")
-  self.cfg:addParam("info2", "Script by KuroXNeko", SCRIPT_PARAM_INFO, "")
+  self.cfg:addParam("info2", "Script version: "..ScriptVersion, SCRIPT_PARAM_INFO, "")
+  self.cfg:addParam("info2", "Last update: "..ScriptUpdate, SCRIPT_PARAM_INFO, "")
+  self.cfg:addParam("info3", "Script by KuroXNeko", SCRIPT_PARAM_INFO, "")
   
   -- Set CallBack.
   AddDrawCallback(function() self:Draw() end)
   AddTickCallback(function() self:Tick() end)
   AddCastSpellCallback(function(slot) self:OnCastSpell(slot) end)
   AddDeleteObjCallback(function(obj) self:OnDeleteObj(obj) end)
+  
+  -- for VIP
+  if VIP_USER then
+    AddSendPacketCallback(function(packet) self:OnSendPacket(packet) end)
+  end
 end
 
 function KuroAmumu:Draw()
@@ -244,6 +256,19 @@ end
 function KuroAmumu:OnDeleteObj(obj)
   if obj.name == "Despair_buf.troy" then
     DespairStatus = false
+  end
+end
+
+function KuroAmumu:OnSendPacket(packet)
+  if self.cfg.msic.blockr then
+    if packet.header == 0xDE then
+      packet.pos = 26
+      local spellId = packet:Decode1()
+      if spellId == _R and self:GetEnemyR() == 0 then
+        print_msg("Block R because no one here!")
+        packet:Block()
+      end
+    end
   end
 end
 

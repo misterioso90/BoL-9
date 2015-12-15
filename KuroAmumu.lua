@@ -22,6 +22,7 @@ local target = nil
 local DespairStatus = false
 local jungleMinions = minionManager(MINION_JUNGLE, 350, myHero)
 local enemyMinions = minionManager(MINION_ENEMY, 350, myHero)
+local packet_check = false
 
 
 -- [Shared Function] --
@@ -165,7 +166,7 @@ function KuroAmumu:Config()
       self.cfg.msic:addParam("info1", "Auto disable W can have bug", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("info2", "when you reload or reconnect during game.", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("info3", "", SCRIPT_PARAM_INFO, "")
-      self.cfg.msic:addParam("blockr", "Block R", SCRIPT_PARAM_ONOFF, false)
+      self.cfg.msic:addParam("blockr", "Block R (Not working yet)", SCRIPT_PARAM_ONOFF, false)
       self.cfg.msic:addParam("info4", "Block R when outrange. (For VIP)", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("info5", "", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("debug", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
@@ -206,7 +207,7 @@ function KuroAmumu:Draw()
     DrawText("All Enemy W: "..tostring(self:GetAllEnemyW()), 20, 80, 130, ARGB(255,255,255,255))
     DrawText("Enemy W: "..tostring(self:GetEnemyW()), 20, 80, 160, ARGB(255,255,255,255))
     DrawText("Enemy R: "..tostring(self:GetEnemyR()), 20, 80, 190, ARGB(255,255,255,255))
-    DrawText("Combo Mode: "..tostring(OrbwalkManager:IsCombo()), 20, 80, 220, ARGB(255,255,255,255))
+    DrawText("Last Packet: "..tostring(packet_check), 20, 80, 220, ARGB(255,255,255,255))
   end
 end
 

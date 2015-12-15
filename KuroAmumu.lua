@@ -16,16 +16,21 @@ if not myHero then
 end
 if myHero.charName ~= "Amumu" then return end
 
-local ScriptVersion = 0.2
+local ScriptVersion = 0.3
 local ScriptUpdate = "15.12.2015"
+local SupportedVersion = "5.24"
 local target = nil
 local DespairStatus = false
 local jungleMinions = minionManager(MINION_JUNGLE, 350, myHero)
 local enemyMinions = minionManager(MINION_ENEMY, 350, myHero)
-local packet_check = false
+local LastCastingPacket = ""
 
 
 -- [Shared Function] --
+
+function toHex(int)
+  return "0x"..string.format("%04X",int)
+end
 
 function print_msg(msg)
   if msg ~= nil then
@@ -74,7 +79,7 @@ function OnLoad()
       UpdateInfo.VersionPath = "raw.githubusercontent.com/kuroxnekos2/BoL/master/KuroAmumu.version"
       UpdateInfo.ScriptPath =  "raw.githubusercontent.com/kuroxnekos2/BoL/master/KuroAmumu.lua"
       UpdateInfo.SavePath = SCRIPT_PATH .. GetCurrentEnv().FILE_NAME
-      UpdateInfo.CallbackUpdate = function(NewVersion, OldVersion) print_msg("Updated to ".. NewVersion ..". Press F9x2!") end
+      UpdateInfo.CallbackUpdate = function(NewVersion, OldVersion) print_msg("Updated to v".. NewVersion ..". Press F9x2!") end
       UpdateInfo.CallbackNoUpdate = LoadScript()
       UpdateInfo.CallbackNewVersion = function(NewVersion) print_msg("New version found. Don't press F9.") end
       UpdateInfo.CallbackError = function(NewVersion) print_msg("Error to download new version. Please try again.") end
@@ -87,7 +92,7 @@ function LoadScript()
   -- Load script with class.
   KA = KuroAmumu()
   _G.KuroAmumuLoaded = true
-  DelayAction(function() print_msg("Lastset version (".. ScriptVersion ..") loaded!") end, 2)
+  DelayAction(function() print_msg("Lastset version (v".. ScriptVersion ..") loaded!") end, 2)
 end
 
 -- [Main Class] --
@@ -163,19 +168,21 @@ function KuroAmumu:Config()
   -- Etc
   self.cfg:addSubMenu("Msic Setting", "msic")
       self.cfg.msic:addParam("autodisablew", "Auto disable W", SCRIPT_PARAM_ONOFF, true)
-      self.cfg.msic:addParam("info1", "Auto disable W can have bug", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("info1", "Auto disable W can have some bug", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("info2", "when you reload or reconnect during game.", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("info3", "", SCRIPT_PARAM_INFO, "")
-      self.cfg.msic:addParam("blockr", "Block R (Not working yet)", SCRIPT_PARAM_ONOFF, false)
+      self.cfg.msic:addParam("blockr", "Block R", SCRIPT_PARAM_ONOFF, false)
       self.cfg.msic:addParam("info4", "Block R when outrange. (For VIP)", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("info5", "", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("debug", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
     
   -- Info
   self.cfg:addParam("info1", "", SCRIPT_PARAM_INFO, "")
-  self.cfg:addParam("info2", "Script version: "..ScriptVersion, SCRIPT_PARAM_INFO, "")
-  self.cfg:addParam("info2", "Last update: "..ScriptUpdate, SCRIPT_PARAM_INFO, "")
-  self.cfg:addParam("info3", "Script by KuroXNeko", SCRIPT_PARAM_INFO, "")
+  self.cfg:addParam("info2", "Script version", SCRIPT_PARAM_INFO, ScriptVersion)
+  self.cfg:addParam("info2", "Last update", SCRIPT_PARAM_INFO, ScriptUpdate)
+  self.cfg:addParam("info3", "Supported LoL Version", SCRIPT_PARAM_INFO, SupportedVersion)
+  self.cfg:addParam("info4", "", SCRIPT_PARAM_INFO, "")
+  self.cfg:addParam("info5", "Script developed by KuroXNeko", SCRIPT_PARAM_INFO, "")
   
   -- Set CallBack.
   AddDrawCallback(function() self:Draw() end)
@@ -184,8 +191,8 @@ function KuroAmumu:Config()
   AddDeleteObjCallback(function(obj) self:OnDeleteObj(obj) end)
   
   -- for VIP
-  if VIP_USER then
-    AddSendPacketCallback(function(packet) self:OnSendPacket(packet) end)
+  if VIP_USER and string.find(GetGameVersion(), "Releases/"..SupportedVersion) then
+    AddSendPacketCallback(function(p) self:OnSendPacket(p) end)
   end
 end
 
@@ -207,7 +214,7 @@ function KuroAmumu:Draw()
     DrawText("All Enemy W: "..tostring(self:GetAllEnemyW()), 20, 80, 130, ARGB(255,255,255,255))
     DrawText("Enemy W: "..tostring(self:GetEnemyW()), 20, 80, 160, ARGB(255,255,255,255))
     DrawText("Enemy R: "..tostring(self:GetEnemyR()), 20, 80, 190, ARGB(255,255,255,255))
-    DrawText("Last Packet: "..tostring(packet_check), 20, 80, 220, ARGB(255,255,255,255))
+    DrawText("Last Casting Packet: "..tostring(LastCastingPacket), 20, 80, 220, ARGB(255,255,255,255))
   end
 end
 
@@ -260,16 +267,18 @@ function KuroAmumu:OnDeleteObj(obj)
   end
 end
 
-function KuroAmumu:OnSendPacket(packet)
-  if self.cfg.msic.blockr then
-    if packet.header == 0xDE then
-      packet.pos = 26
-      local spellId = packet:Decode1()
-      if spellId == _R and self:GetEnemyR() == 0 then
+-- 5.24 Q "0x00A8", W "0x0054", E "0x0027", R "0x005F", D "Ignite, 0x0005", F "Flash, 0x0085"
+function KuroAmumu:OnSendPacket(p)
+  if p.header == 0x00A6 then
+    p.pos = 18
+    local spell = toHex(p:Decode1())
+    LastCastingPacket = spell
+    if spell == "0x005F" then
+      if self.cfg.msic.blockr and self:GetEnemyR() == 0 then
         print_msg("Block R because no one here!")
-        packet:Block()
+        p:Block()
       end
-    end
+    end 
   end
 end
 

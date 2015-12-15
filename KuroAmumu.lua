@@ -166,7 +166,7 @@ function KuroAmumu:Config()
       self.cfg.msic:addParam("info2", "when you reload or reconnect during game.", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("info3", "", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("blockr", "Block R", SCRIPT_PARAM_ONOFF, false)
-      self.cfg.msic:addParam("info4", "Block R when outrange.", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("info4", "Block R when outrange. (For VIP)", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("info5", "", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("debug", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
     

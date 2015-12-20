@@ -7,8 +7,8 @@
   /_/ |_\__,_/_/   \____/   /____/\___/_/  /_/ .___/\__/   /____/\___/_/  /_/\___/____/  
                                             /_/                                          
 
-  Kuro Amumu Beta Test
-            by. KuroXNeko
+  Kuro Script Series - Kuro Amumu
+                       by. KuroXNeko
 ]]--
 
 if not myHero then
@@ -16,8 +16,9 @@ if not myHero then
 end
 if myHero.charName ~= "Amumu" then return end
 
-local ScriptVersion = 0.3
-local ScriptUpdate = "15.12.2015"
+local ScriptVersion = 1.00
+local ScriptVersionDisp = "1.00"
+local ScriptUpdate = "20.12.2015"
 local SupportedVersion = "5.24"
 local target = nil
 local DespairStatus = false
@@ -149,11 +150,34 @@ function KuroAmumu:Config()
       self.cfg.harass:addParam("autoe", "Use Auto E", SCRIPT_PARAM_ONOFF, true)
       self.cfg.harass:addParam("autoemana", "Auto E Mana", SCRIPT_PARAM_SLICE, 30,0,100)
       
-  -- Lane Clear
+  -- Lane & Jungle Clear
   self.cfg:addSubMenu("Clear Setting", "clear")
-      self.cfg.clear:addParam("info1", "Not yet.", SCRIPT_PARAM_INFO, "")
-  -- Jungle Clear
+      self.cfg.clear:addParam("info1", "---- Lane Clear ----", SCRIPT_PARAM_INFO, "")
+      self.cfg.clear:addParam("lanew", "Use W", SCRIPT_PARAM_ONOFF, false)
+      self.cfg.clear:addParam("lanewmana", "W Mana", SCRIPT_PARAM_SLICE, 20,0,100)
+      self.cfg.clear:addParam("info2", "", SCRIPT_PARAM_INFO, "")
+      self.cfg.clear:addParam("lanee", "Use E", SCRIPT_PARAM_ONOFF, true)
+      self.cfg.clear:addParam("laneemana", "E Mana", SCRIPT_PARAM_SLICE, 50,0,100)
+      self.cfg.clear:addParam("info3", "", SCRIPT_PARAM_INFO, "")
+      self.cfg.clear:addParam("lanecount", "Min Minion Count", SCRIPT_PARAM_SLICE, 2,0,8)
+      self.cfg.clear:addParam("info4", "", SCRIPT_PARAM_INFO, "")
+      self.cfg.clear:addParam("info5", "---- Jungle Clear ----", SCRIPT_PARAM_INFO, "")
+      self.cfg.clear:addParam("jungleq", "Use Q", SCRIPT_PARAM_ONOFF, true)
+      self.cfg.clear:addParam("jungleqlong", "Use Q only jungle is far.", SCRIPT_PARAM_ONOFF, true)
+      self.cfg.clear:addParam("info6", "", SCRIPT_PARAM_INFO, "")
+      self.cfg.clear:addParam("junglew", "Use W", SCRIPT_PARAM_ONOFF, true)
+      self.cfg.clear:addParam("junglewmana", "W Mana", SCRIPT_PARAM_SLICE, 0,0,100)
+      self.cfg.clear:addParam("info7", "", SCRIPT_PARAM_INFO, "")
+      self.cfg.clear:addParam("junglee", "Use E", SCRIPT_PARAM_ONOFF, true)
+      self.cfg.clear:addParam("jungleemana", "E Mana", SCRIPT_PARAM_SLICE, 0,0,100)
   
+  
+  -- Lasthit
+  self.cfg:addSubMenu("Lasthit Setting", "lasthit")
+      self.cfg.lasthit:addParam("smarte", "Use Smart Lasthit E", SCRIPT_PARAM_ONOFF, true)
+      self.cfg.lasthit:addParam("smartemana", "E Mana", SCRIPT_PARAM_SLICE, 50,0,100)
+      
+      
   -- Spell Menu with SimpleLib.
   --self.cfg:addSubMenu("Spell Setting", "spell")
   
@@ -164,7 +188,10 @@ function KuroAmumu:Config()
   -- Key Menu with SimpleLib
   self.cfg:addSubMenu("Key Setting", "key")
       OrbwalkManager:LoadCommonKeys(self.cfg.key)
-  
+      self.cfg.key:addParam("info1", "---- Other Key ----", SCRIPT_PARAM_INFO, "")
+      self.cfg.key:addParam("manualr", "Manually cast R", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("T"))
+      self.cfg.key:permaShow("manualr")
+      
   -- Etc
   self.cfg:addSubMenu("Msic Setting", "msic")
       self.cfg.msic:addParam("autodisablew", "Auto disable W", SCRIPT_PARAM_ONOFF, true)
@@ -174,15 +201,23 @@ function KuroAmumu:Config()
       self.cfg.msic:addParam("blockr", "Block R", SCRIPT_PARAM_ONOFF, false)
       self.cfg.msic:addParam("info4", "Block R when outrange. (For VIP)", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("info5", "", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("manualr", "Manually R Chmps", SCRIPT_PARAM_SLICE, 3,1,5)
+      self.cfg.msic:addParam("info5", "If you press manually casting key", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("info5", "script try to cast R if champ is near.", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("info7", "", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("checkwdistance", "Check Hero W Distance", SCRIPT_PARAM_SLICE, 400,300,500)
+      self.cfg.msic:addParam("checkrdistance", "Check Hero R Distance", SCRIPT_PARAM_SLICE, 500,400,550)
+      self.cfg.msic:addParam("info8", "Low R distance makes better CC.", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("info9", "", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("debug", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
     
   -- Info
   self.cfg:addParam("info1", "", SCRIPT_PARAM_INFO, "")
-  self.cfg:addParam("info2", "Script version", SCRIPT_PARAM_INFO, ScriptVersion)
-  self.cfg:addParam("info2", "Last update", SCRIPT_PARAM_INFO, ScriptUpdate)
-  self.cfg:addParam("info3", "Supported LoL Version", SCRIPT_PARAM_INFO, SupportedVersion)
-  self.cfg:addParam("info4", "", SCRIPT_PARAM_INFO, "")
-  self.cfg:addParam("info5", "Script developed by KuroXNeko", SCRIPT_PARAM_INFO, "")
+  self.cfg:addParam("info2", "Script version", SCRIPT_PARAM_INFO, ScriptVersionDisp)
+  self.cfg:addParam("info3", "Last update", SCRIPT_PARAM_INFO, ScriptUpdate)
+  self.cfg:addParam("info4", "Supported LoL Version", SCRIPT_PARAM_INFO, SupportedVersion)
+  self.cfg:addParam("info5", "", SCRIPT_PARAM_INFO, "")
+  self.cfg:addParam("info6", "Script developed by KuroXNeko", SCRIPT_PARAM_INFO, "")
   
   -- Set CallBack.
   AddDrawCallback(function() self:Draw() end)
@@ -215,6 +250,12 @@ function KuroAmumu:Draw()
     DrawText("Enemy W: "..tostring(self:GetEnemyW()), 20, 80, 160, ARGB(255,255,255,255))
     DrawText("Enemy R: "..tostring(self:GetEnemyR()), 20, 80, 190, ARGB(255,255,255,255))
     DrawText("Last Casting Packet: "..tostring(LastCastingPacket), 20, 80, 220, ARGB(255,255,255,255))
+    
+    local jungle_q = self.Spell_Q:JungleClear({UseCast = false})
+    if jungle_q then
+      DrawText("Distance Jungle Q: "..GetDistance(jungle_q, myHero), 20, 80, 250, ARGB(255,255,255,255))
+      DrawCircle3D(jungle_q.x, jungle_q.y, jungle_q.z, 100, 2, ARGB(255,255,255,255), 8) 
+    end
   end
 end
 
@@ -253,6 +294,9 @@ function KuroAmumu:Tick()
     self:LastHit()
   end
   
+  if self.cfg.key.manualr then
+    self:ManualCastR()
+  end
 end
 
 function KuroAmumu:OnCastSpell(slot)
@@ -289,7 +333,7 @@ function KuroAmumu:Combo()
   
   -- Auto W
   if self.cfg.combo.autow then
-    if self:GetEnemyW() ~= 0 and (myHero.mana / myHero.maxMana > self.cfg.combo.autowmana / 100) then
+    if self:GetEnemyW() ~= 0 and self:CheckMana(self.cfg.combo.autowmana) then
       self:EnableW()
     else
       self:DisableW()
@@ -297,7 +341,7 @@ function KuroAmumu:Combo()
   end
   
   -- Auto E
-  if self.cfg.combo.autoe and self.Spell_E:ValidTarget(target) and (myHero.mana / myHero.maxMana > self.cfg.combo.autoemana / 100) then
+  if self.cfg.combo.autoe and self.Spell_E:IsReady() and self.Spell_E:ValidTarget(target) and self:CheckMana(self.cfg.combo.autoemana) then
     self.Spell_E:Cast(target)
   end
   
@@ -320,7 +364,7 @@ function KuroAmumu:Harass()
   
   -- Auto W
   if self.cfg.harass.autow then
-    if self:GetEnemyW() ~= 0 and (myHero.mana / myHero.maxMana > self.cfg.harass.autowmana / 100) then
+    if self:GetEnemyW() ~= 0 and self:CheckMana(self.cfg.harass.autowmana) then
       self:EnableW()
     else
       self:DisableW()
@@ -328,17 +372,92 @@ function KuroAmumu:Harass()
   end
   
   -- Auto E
-  if self.cfg.harass.autoe and self.Spell_E:ValidTarget(target) and (myHero.mana / myHero.maxMana > self.cfg.harass.autoemana / 100) then
+  if self.cfg.harass.autoe and self.Spell_E:ValidTarget(target) and self:CheckMana(self.cfg.harass.autoemana) then
     self.Spell_E:Cast(target)
   end
 end
 
 function KuroAmumu:Clear()
   
+  -- Get Minion
+  local minion = self:GetMinionW()
+  local jungle = self:GetJungleW()
+  local jungle_Q = self.Spell_Q:JungleClear({UseCast = false})
+  
+  -- Lane Clear
+  if minion >= self.cfg.clear.lanecount then
+    
+    -- W
+    if self.cfg.clear.lanew and self:CheckMana(self.cfg.clear.lanewmana) then
+      self:EnableW()
+    else
+      self:DisableW()
+    end
+    
+    -- E
+    if self.cfg.clear.lanee and self.Spell_E:IsReady() and self:CheckMana(self.cfg.clear.laneemana) then
+      CastSpell(_E, mousePos.x, mousePos.y)
+    end
+  end
+  
+  
+  -- Jungle Clear
+  if jungle > 0 then
+    
+    -- W
+    if self.cfg.clear.junglew and self:CheckMana(self.cfg.clear.junglewmana) then
+      self:EnableW()
+    else
+      self:DisableW()
+    end
+    
+    -- E
+    if self.cfg.clear.junglee and self.Spell_E:IsReady() and self:CheckMana(self.cfg.clear.jungleemana) then
+      CastSpell(_E, mousePos.x, mousePos.y)
+    end
+  end
+  
+  -- Jungle Q
+  if jungle_Q and self.cfg.clear.jungleq then
+    
+    -- Check distance
+    if self.cfg.clear.jungleqlong and GetDistance(myHero, jungle_Q) >= 400 then
+      
+      -- Cast Spell
+      self.Spell_Q:Cast(jungle_Q)
+      
+    -- If "Check distance" is disabled
+    elseif not self.cfg.clear.jungleqlong then
+    
+      -- Just Cast Spell
+      self.Spell_Q:Cast(jungle_Q)
+    end
+  end
+  
+  -- Auto Disable W
+  self:AutoDisableW()
 end
 
 function KuroAmumu:LastHit()
+  
+  -- Config Check.
+  if not self.cfg.lasthit.smarte then return end
+  
+  -- Get Lasthit with E
+  local lasthit_target = self.Spell_E:LastHit()
+  
+  -- Cast spell
+  if lasthit_target and self:CheckMana(self.cfg.lasthit.smartemana) then
+    self.Spell_E:Cast(lasthit_target)
+  end
+end
 
+function KuroAmumu:ManualCastR()
+  
+  -- Check Enemy is more then setting
+  if self:GetEnemyR() >= self.cfg.msic.manualr then
+    CastSpell(_R, mousePos.x, mousePos.y)
+  end
 end
 
 function KuroAmumu:AutoDisableW()
@@ -365,29 +484,51 @@ function KuroAmumu:GetAllEnemyW()
   jungleMinions:update()
   enemyMinions:update()
   
-  if jungleMinions.iCount > 0 or enemyMinions.iCount > 0 or CountEnemyHeroInRange(350) > 0 then
+  if jungleMinions.iCount > 0 or enemyMinions.iCount > 0 or CountEnemyHeroInRange(self.cfg.msic.checkwdistance) > 0 then
     return true
   else
     return false
   end
 end
 
+function KuroAmumu:GetMinionW()
+  
+  -- Update minions.
+  enemyMinions:update()
+  
+  -- Return Count
+  return enemyMinions.iCount
+end
+
+function KuroAmumu:GetJungleW()
+  
+  -- Update minions.
+  jungleMinions:update()
+  
+  -- Return Count
+  return jungleMinions.iCount
+end
+
 function KuroAmumu:GetEnemyW()
   
   -- Return enemy in range.
-  return CountEnemyHeroInRange(350)
+  return CountEnemyHeroInRange(self.cfg.msic.checkwdistance)
 end
 
 function KuroAmumu:GetEnemyR()
   
-  -- Set enemy is 0.
-  local EnemyCount = 0
-  
   -- Find every enemy in range
-  for index, value in ipairs(GetEnemyHeroes()) do
-    if self.Spell_R:ValidTarget(value) then EnemyCount = EnemyCount + 1 end
-  end
+  return CountEnemyHeroInRange(self.cfg.msic.checkrdistance)
+end
+
+function KuroAmumu:CheckMana(mana)
   
-  -- Return total enemy count.
-  return EnemyCount
+  if not mana then mana = 100 end
+  
+  -- Check Mana
+  if myHero.mana / myHero.maxMana > mana / 100 then
+    return true
+  else 
+    return false
+  end
 end

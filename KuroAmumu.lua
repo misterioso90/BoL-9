@@ -16,9 +16,9 @@ if not myHero then
 end
 if myHero.charName ~= "Amumu" then return end
 
-local ScriptVersion = 1.00
-local ScriptVersionDisp = "1.00"
-local ScriptUpdate = "20.12.2015"
+local ScriptVersion = 1.1
+local ScriptVersionDisp = "1.1"
+local ScriptUpdate = "25.12.2015"
 local SupportedVersion = "5.24"
 local target = nil
 local DespairStatus = false
@@ -52,12 +52,12 @@ function LoadSimpleLib()
 end
 
 function LoadSLK()
-  if FileExist(LIB_PATH .. "/SourceLibk.lua") then
-    require("SourceLibk")
+  if FileExist(LIB_PATH .. "/SourceLib_Fix.lua") then
+    require("SourceLib_Fix")
     return true
   else
     print_msg("Downloading SourceLibk, please don't press F9")
-    DelayAction(function() DownloadFile("https://raw.githubusercontent.com/kej1191/anonym/master/Common/SourceLibk.lua".."?rand="..math.random(1,10000), LIB_PATH.."SourceLibk.lua", function () print_msg("Successfully downloaded SourceLibk. Press F9 twice.") end) end, 3) 
+    DelayAction(function() DownloadFile("https://raw.githubusercontent.com/kej1191/anonym/master/Common/SourceLibk.lua".."?rand="..math.random(1,10000), LIB_PATH.."SourceLib_Fix.lua", function () print_msg("Successfully downloaded SourceLibk. Press F9 twice.") end) end, 3) 
     return false
   end
 end
@@ -200,15 +200,16 @@ function KuroAmumu:Config()
       self.cfg.msic:addParam("info3", "", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("blockr", "Block R", SCRIPT_PARAM_ONOFF, false)
       self.cfg.msic:addParam("info4", "Block R when outrange. (For VIP)", SCRIPT_PARAM_INFO, "")
-      self.cfg.msic:addParam("info5", "", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("info5", "If LoL is updated, it may not working.", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("info6", "", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("manualr", "Manually R Chmps", SCRIPT_PARAM_SLICE, 3,1,5)
-      self.cfg.msic:addParam("info5", "If you press manually casting key", SCRIPT_PARAM_INFO, "")
-      self.cfg.msic:addParam("info5", "script try to cast R if champ is near.", SCRIPT_PARAM_INFO, "")
-      self.cfg.msic:addParam("info7", "", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("info7", "If you press manually casting key", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("info8", "script try to cast R if champ is near.", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("info9", "", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("checkwdistance", "Check Hero W Distance", SCRIPT_PARAM_SLICE, 400,300,500)
       self.cfg.msic:addParam("checkrdistance", "Check Hero R Distance", SCRIPT_PARAM_SLICE, 500,400,550)
-      self.cfg.msic:addParam("info8", "Low R distance makes better CC.", SCRIPT_PARAM_INFO, "")
-      self.cfg.msic:addParam("info9", "", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("info10", "Low R distance makes better CC.", SCRIPT_PARAM_INFO, "")
+      self.cfg.msic:addParam("info11", "", SCRIPT_PARAM_INFO, "")
       self.cfg.msic:addParam("debug", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
     
   -- Info
@@ -217,7 +218,7 @@ function KuroAmumu:Config()
   self.cfg:addParam("info3", "Last update", SCRIPT_PARAM_INFO, ScriptUpdate)
   self.cfg:addParam("info4", "Supported LoL Version", SCRIPT_PARAM_INFO, SupportedVersion)
   self.cfg:addParam("info5", "", SCRIPT_PARAM_INFO, "")
-  self.cfg:addParam("info6", "Script developed by KuroXNeko", SCRIPT_PARAM_INFO, "")
+  self.cfg:addParam("info6", "Script developed by KuroXNeko", SCRIPT_PARAM_INFO, ":P")
   
   -- Set CallBack.
   AddDrawCallback(function() self:Draw() end)

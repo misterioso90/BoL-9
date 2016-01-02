@@ -6,7 +6,7 @@ function G_DrawCircle(x, y, z, radius, color)
   local v2 = Vector(x, y, z)
   local ClosestPos = v2+(v1-v2):normalized()*radius
   local ScreenPos = WorldToScreen(D3DXVECTOR3(ClosestPos.x, ClosestPos.y, ClosestPos.z))
-  local radius = radius*.92
+  local radius = radius*.96
   if not color then color = 4294967295 end
   
   if OnScreen({x = ScreenPos.x, y = ScreenPos.y}, {x = ScreenPos.x, y = ScreenPos.y}) then
